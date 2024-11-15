@@ -22,10 +22,12 @@
 //
 // Alternatively the tool can be started and data words can be pasted into the terminal.
 
+#include <bitset>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 
 struct DecodedVMEDataWord
 {
@@ -88,9 +90,11 @@ DecodedVMEDataWord decode_mesytec_vme_word(std::uint32_t word)
 }
 
 template<typename Out>
-void print_decoded_vme_word(Out &out, const DecodedVMEDataWord &dw)
+void print_decoded_vme_word(Out &out, const DecodedVMEDataWord &dw, size_t word_count)
 {
-    fprintf(out, "0x%08x ", dw.word);
+    std::ostringstream oss;
+    oss << std::bitset<32>(dw.word);
+    fprintf(out, "word#%3lu: 0x%08x %s ", word_count, dw.word, oss.str().c_str());
 
 
     if (dw.header_found)
@@ -122,11 +126,12 @@ int main()
     std::cin.unsetf(std::ios::hex);
     std::cin.unsetf(std::ios::oct);
 
-    std::uint32_t data_word;
+    std::uint32_t data_word = 0;
+    std::size_t word_count = 0;
 
     while (std::cin >> data_word)
     {
         auto decoded = decode_mesytec_vme_word(data_word);
-        print_decoded_vme_word(stdout, decoded);
+        print_decoded_vme_word(stdout, decoded, word_count++);
     }
 }
